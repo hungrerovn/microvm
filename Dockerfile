@@ -7,6 +7,7 @@ ARG ROOTFS_SHA256="b2148a9e3a1c86746e0903c2733f94b3999f71618a54dc8f228ab8a29f60a
 RUN apk add --no-cache \
     qemu-system-x86_64 \
     e2fsprogs \
+    e2fsprogs-extra \
     curl \
     ca-certificates \
     coreutils \
