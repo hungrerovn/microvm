@@ -9,6 +9,7 @@ RUN apk add --no-cache \
     e2fsprogs \
     e2fsprogs-extra \
     curl \
+    tmux \
     ca-certificates \
     coreutils \
     util-linux
