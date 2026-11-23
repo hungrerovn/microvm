@@ -9,6 +9,9 @@ SSH_BIND="${SSH_BIND:-0.0.0.0}"
 PREALLOC="${PREALLOC:-0}"
 MITIGATIONS_OFF="${MITIGATIONS_OFF:-1}"
 
+KERNEL="${KERNEL:-${VM_DIR:-/opt/vm}/vmlinux-6.18.62}"
+ROOTFS="${ROOTFS:-${VM_DIR:-/opt/vm}/debian-rootfs.ext4}"
+
 grow_disk() {
   img="$1"
   before=$(stat -c %s "$img")
@@ -49,12 +52,19 @@ if [ "$PREALLOC" = 1 ]; then
   MEMOPT="-object memory-backend-ram,id=mem,size=${MEM}M,prealloc=on -machine memory-backend=mem"
 fi
 
+tmux set-option -g remain-on-exit on 2>/dev/null || true
+
+tmux new-session -d -s vm \
+  "qemu-system-x86_64 \
+    -M \"$MACHINE\" -accel \"$ACCEL\" -cpu \"$CPU\" -m \"$MEM\" -smp \"$CPUS\" $MEMOPT \
+    -nodefaults -no-user-config -nographic -serial mon:stdio -no-reboot \
+    -kernel \"$KERNEL\" -append \"$APPEND\" \
+    -drive id=rootfs,file=\"$ROOTFS\",format=raw,if=none,cache=unsafe,aio=threads,discard=unmap \
+    -device virtio-blk-device,drive=rootfs \
+    -netdev \"user,id=n0,ipv6=off,hostfwd=tcp:${SSH_BIND}:${SSH_PORT}-:22\" \
+    -device virtio-net-device,netdev=n0"
+
 echo "[+] ssh -p $SSH_PORT debian@127.0.0.1 (pw: debian)"
-exec qemu-system-x86_64 \
-  -M "$MACHINE" -accel "$ACCEL" -cpu "$CPU" -m "$MEM" -smp "$CPUS" $MEMOPT \
-  -nodefaults -no-user-config -nographic -serial mon:stdio -no-reboot \
-  -kernel "$KERNEL" -append "$APPEND" \
-  -drive id=rootfs,file="$ROOTFS",format=raw,if=none,cache=unsafe,aio=threads,discard=unmap \
-  -device virtio-blk-device,drive=rootfs \
-  -netdev "user,id=n0,ipv6=off,hostfwd=tcp:${SSH_BIND}:${SSH_PORT}-:22" \
-  -device virtio-net-device,netdev=n0
+echo "[+] console: docker exec -it <container> tmux attach -t vm"
+
+exec sleep infinity

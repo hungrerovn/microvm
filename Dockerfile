@@ -9,10 +9,11 @@ RUN apk add --no-cache \
     e2fsprogs \
     e2fsprogs-extra \
     curl \
-    tmux \
     ca-certificates \
     coreutils \
-    util-linux
+    util-linux \
+    tmux \
+    tini
 
 RUN mkdir -p /opt/vm && \
     curl -fsSL -o /opt/vm/vmlinux-6.18.62 "$KERNEL_URL" && \
@@ -26,4 +27,4 @@ ENV VM_DIR=/opt/vm \
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/entrypoint.sh"]
