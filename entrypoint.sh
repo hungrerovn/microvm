@@ -50,12 +50,11 @@ if [ "$PREALLOC" = 1 ]; then
 fi
 
 echo "[+] ssh -p $SSH_PORT debian@127.0.0.1 (pw: debian)"
-exec tmux new-session -s vm \
-  "qemu-system-x86_64 \
-    -M \"$MACHINE\" -accel \"$ACCEL\" -cpu \"$CPU\" -m \"$MEM\" -smp \"$CPUS\" $MEMOPT \
-    -nodefaults -no-user-config -nographic -serial mon:stdio -no-reboot \
-    -kernel \"$KERNEL\" -append \"$APPEND\" \
-    -drive id=rootfs,file=\"$ROOTFS\",format=raw,if=none,cache=unsafe,aio=threads,discard=unmap \
-    -device virtio-blk-device,drive=rootfs \
-    -netdev \"user,id=n0,ipv6=off,hostfwd=tcp:${SSH_BIND}:${SSH_PORT}-:22\" \
-    -device virtio-net-device,netdev=n0"
+exec qemu-system-x86_64 \
+  -M "$MACHINE" -accel "$ACCEL" -cpu "$CPU" -m "$MEM" -smp "$CPUS" $MEMOPT \
+  -nodefaults -no-user-config -nographic -serial mon:stdio -no-reboot \
+  -kernel "$KERNEL" -append "$APPEND" \
+  -drive id=rootfs,file="$ROOTFS",format=raw,if=none,cache=unsafe,aio=threads,discard=unmap \
+  -device virtio-blk-device,drive=rootfs \
+  -netdev "user,id=n0,ipv6=off,hostfwd=tcp:${SSH_BIND}:${SSH_PORT}-:22" \
+  -device virtio-net-device,netdev=n0
