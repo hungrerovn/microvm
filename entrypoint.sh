@@ -50,6 +50,7 @@ if [ "$PREALLOC" = 1 ]; then
 fi
 
 echo "[+] ssh -p $SSH_PORT debian@127.0.0.1 (pw: debian)"
+tail -f /dev/null
 exec qemu-system-x86_64 \
   -M "$MACHINE" -accel "$ACCEL" -cpu "$CPU" -m "$MEM" -smp "$CPUS" $MEMOPT \
   -nodefaults -no-user-config -nographic -serial mon:stdio -no-reboot \
